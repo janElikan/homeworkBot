@@ -15,9 +15,12 @@ Features:
 - [x] create repo [[@pc]]
 - [x] figure out how to use rust under NixOS
 - [x] create README
-- [ ] create scaffolding [[@pc]]
-- [ ] implement schedules and assignments [[@pc]]
-- [ ] implement logic [[@pc]]
+- [x] create types [[@pc]]
+- [x] create incoming message handling
+- [ ] create conversation state [[@pc]]
+- [ ] implement schedules [[@pc]]
+- [ ] implement assignments [[@pc]]
+- [ ] implement admins [[@pc]]
 - [ ] implement logging [[@pc]]
 - [ ] wrap builds in a flake [[@pc]]
 - [ ] initial launch [[@pc]]

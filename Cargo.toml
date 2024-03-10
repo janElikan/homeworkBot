@@ -4,6 +4,23 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+chrono = "0.4.35"
 color-eyre = "0.6.2"
 frankenstein = { version = "0.30.4", features = ["async-http-client"] }
 tokio = { version = "1.36.0", features = ["full"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+enum_glob_use = "deny"
+pedantic = "deny"
+nursery = "deny"
+unwrap_used = "deny"
+
+[profile.release]
+opt-level = 'z'   # Optimize for size.
+lto = true        # Enable Link Time Optimisation
+codegen-units = 1 # Reduced to increase optimisations.
+panic = 'abort'   # Abort on panic
+strip = "symbols" # Strip symbols from binary
