@@ -12,7 +12,7 @@
       with pkgs;
       {
         devShells.default = mkShell {
-          buildInputs = [ cargo rustc bacon ];
+          buildInputs = [ cargo rustc rustfmt clippy bacon ];
         };
       }
     );
