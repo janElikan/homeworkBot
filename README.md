@@ -18,15 +18,22 @@ Features:
 - [x] create types [[@pc]]
 - [x] create incoming message handling
 - [ ] create conversation state [[@pc]]
+- [x] define the telegram module [[@phone]]
+- [ ] move telegram things into a separate module
 - [ ] implement schedules [[@pc]]
 - [ ] implement assignments [[@pc]]
 - [ ] implement admins [[@pc]]
 - [ ] implement logging [[@pc]]
+- [ ] improve error types [[@pc]]
+- [ ] implement the storage [[@pc]]
 - [ ] wrap builds in a flake [[@pc]]
 - [ ] initial launch [[@pc]]
-- [ ] implement the DB [[@pc]]
+- [ ] research how to store files [[@phone]]
+- [ ] add file uploads [[@pc]]
 
 ## Server owner's manual (self-hosting)
+The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.
+
 You'll need any machine that has the Nix package manager on it. Personally, I'm using a Raspberry Pi 3B+.
 
 \<instructions on how to use it with nix here />
@@ -48,7 +55,9 @@ All the commands don't take any arguments and ask follow-up questions if needed
 - `/update-tomorrow-schedule`, that's really meant for the teachers. It asks for a new list of subjects, you have to type their names manually.
 
 ## A peek under the hood
-For now, it won't have a database to simplify its design. Later on, I plan on adding that.
+The app is designed to be as simple as possible, so it does not fully adhere to 12 factor app principles. They recommend storing persistent data in a database, but that would be quite overkill for my purposes. 12 factor apps are designed to scale, here you just host your own instance for each class.
+
+I'm temporarily ditching async because I can't figure out how to work… Get back to that later.
 
 ### Types
 ```rust
@@ -64,4 +73,24 @@ struct Period {
   end: NaiveDate;
   name: String;
 }
+```
+
+### Telegram module
+```rust
+enum Action {
+  SetAssignment((String, String)),
+  DeleteAssignment(String),
+  DeleteSubject(String),
+
+  UpdateTomorrowSchedule(Vec<Period>),
+  SetSchedule(Vec<Period>),
+
+  PromoteUserId(String),
+  DemoteUserId(String),
+}
+
+/// Module Telegram
+async fn init(token: &str) -> Bot;
+
+async fn get_updates(bot: Bot, conversations: Vec<ConversationState>) -> Option<Action>;
 ```
