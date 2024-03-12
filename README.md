@@ -19,7 +19,9 @@ Features:
 - [x] create incoming message handling
 - [ ] create conversation state [[@pc]]
 - [x] define the telegram module [[@phone]]
-- [ ] move telegram things into a separate module
+- [x] move telegram things into a separate module
+- [x] figure out how to actually fix the problem described below
+- [ ] fix it
 - [ ] implement schedules [[@pc]]
 - [ ] implement assignments [[@pc]]
 - [ ] implement admins [[@pc]]
@@ -30,11 +32,15 @@ Features:
 - [ ] initial launch [[@pc]]
 - [ ] research how to store files [[@phone]]
 - [ ] add file uploads [[@pc]]
+- [ ] add documentation [[@pc]]
 
 ## Server owner's manual (self-hosting)
 The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.
 
-You'll need any machine that has the Nix package manager on it. Personally, I'm using a Raspberry Pi 3B+.
+\<binary installation instructions here />
+
+## Building from source
+You'll need any machine that has the Nix package manager on it.
 
 \<instructions on how to use it with nix here />
 
@@ -58,6 +64,30 @@ All the commands don't take any arguments and ask follow-up questions if needed
 The app is designed to be as simple as possible, so it does not fully adhere to 12 factor app principles. They recommend storing persistent data in a database, but that would be quite overkill for my purposes. 12 factor apps are designed to scale, here you just host your own instance for each class.
 
 I'm temporarily ditching async because I can't figure out how to work… Get back to that later.
+
+\<excalidraw diagram here />
+
+Modules:
+- lib (common/types)
+- telegram (Messenger implementation)
+- file_store (Store implementation)
+- conversation (Messenger's helper functions)
+
+> [!ERROR] the current implementation can't process a message and then respond to it, one the action is created it's GONE
+> one possible solution is to add a .reply(&str) method to BotResponse, maybe rename it to Command
+
+### How solve that, exactly
+To answer that, I'll first need to figure out the bot's architecture, I'm thinking:
+- main runs `telegram.refresh()`
+- main reads `telegram.last_update`
+- and calls `conversation.process_command(update)`
+- getting an `Action` as a result
+- main calls `lib.process(action)`
+- `lib.process` calls `store.load/save/whatever`
+- `lib.process` returns a new `App` which I should probably rename to Data
+- main calls `conversation.form_reply(data, last_action)` which returns a string
+- main calls `telegram.reply(message)` which means the message is processed
+- `telegram` deletes the last message from the queue replacing it with None
 
 ### Types
 ```rust
