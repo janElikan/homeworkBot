@@ -1,5 +1,5 @@
 use color_eyre::eyre::Result;
-use homeworkbot::{telegram::Telegram, Messenger};
+use homeworkbot::{storage::Storage, telegram::Telegram};
 use std::env;
 
 fn main() -> Result<()> {
@@ -8,10 +8,7 @@ fn main() -> Result<()> {
     let token = env::var("BOT_TOKEN").expect("BOT_TOKEN environment variable");
 
     let mut bot = Telegram::new(&token)?;
-    println!("Started the bot");
+    let mut store = Storage::new();
 
-    loop {
-        let action = bot.get_updates()?;
-        dbg!(action);
-    }
+    homeworkbot::run(&mut bot, &mut store)
 }

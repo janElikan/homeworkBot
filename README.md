@@ -17,11 +17,11 @@ Features:
 - [x] create README
 - [x] create types [[@pc]]
 - [x] create incoming message handling
-- [ ] create conversation state [[@pc]]
+- [x] create conversation state [[@pc]]
 - [x] define the telegram module [[@phone]]
 - [x] move telegram things into a separate module
 - [x] figure out how to actually fix the problem described below
-- [ ] redo the types
+- [x] redo the types
 - [ ] write the state module, make it work in-ram [[@pc]]
 - [ ] write the telegram module [[@pc]]
 - [ ] write the conversation logic [[@pc]]

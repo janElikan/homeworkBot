@@ -1,38 +1,53 @@
-use chrono::NaiveDate;
+#![allow(dead_code)]
+#![allow(unused_variables)]
+use chrono::{NaiveDate, NaiveTime, Weekday};
 use color_eyre::eyre::Result;
 
-mod conversation;
-pub mod telegram;
+pub trait State {
+    fn get_chat_state(&self, user_id: String) -> Result<Vec<String>>;
+    fn add_message(&self, user_id: String) -> Result<()>;
+    fn reset_chat_state(&self, user_id: String) -> Result<()>;
 
-#[allow(dead_code)]
-pub struct App {
-    pub current_assignments: Vec<String>,
-    pub schedule: Vec<Vec<Period>>,
-    pub overwrite_schedule: Option<Vec<Period>>,
-    pub admins: Vec<String>,
+    fn get_permissions(&self, user_id: String) -> Result<Permissions>;
+    fn set_permissions(&self, user_id: String, permissions: Permissions) -> Result<()>;
+
+    /// empty subject means all
+    /// empty due date means all pending
+    fn get_assignments(
+        &self,
+        subject: Option<String>,
+        due: Option<NaiveTime>,
+    ) -> Result<Vec<String>>;
+    fn set_assignments(&self, subject: Option<String>, assignment: String) -> Result<()>;
+
+    fn get_schedule(&self, periods: Vec<Period>) -> Result<Period>;
+    fn set_schedule(&self, periods: Vec<Period>) -> Result<()>;
+    fn overwrite_schedule(&self, date: NaiveDate, periods: Vec<Period>) -> Result<()>;
 }
 
 #[derive(Debug)]
 pub struct Period {
-    pub start: NaiveDate,
-    pub end: NaiveDate,
+    pub weekday: Weekday,
+    pub start: NaiveTime,
+    pub end: NaiveTime,
     pub name: String,
 }
 
-#[derive(Debug)]
-pub enum Action {
-    SetAssignment((String, String)),
-    DeleteAssignment(String),
-    DeleteSubject(String),
-
-    UpdateTomorrowSchedule(Vec<Period>),
-    SetSchedule(Vec<Period>),
-
-    PromoteUserId(String),
-    DemoteUserId(String),
+pub enum Permissions {
+    None,
+    Read,
+    ReadWrite,
 }
 
-// todo: add error types
 pub trait Messenger {
-    fn get_updates(&mut self) -> Result<Option<Action>>;
+    fn fetch(&self) -> Result<()>;
+    fn last(&self) -> Result<Option<String>>;
+    fn reply(&self, message: String) -> Result<()>;
+}
+
+pub mod storage;
+pub mod telegram;
+
+pub fn run(messenger: &mut dyn Messenger, state: &mut dyn State) -> Result<()> {
+    todo!();
 }
