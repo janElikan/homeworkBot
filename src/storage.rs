@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::NaiveDate;
+use color_eyre::eyre::OptionExt;
 
 use crate::{Period, Permissions, State};
 
@@ -48,52 +49,73 @@ impl Default for Storage {
 
 impl State for Storage {
     fn get_chat_state(&self, user_id: String) -> color_eyre::eyre::Result<Vec<String>> {
-        todo!()
+        let chat = self.chat_state.iter().find(|chat| chat.user_id == user_id).ok_or_eyre("chat not found")?;
+
+        Ok(chat.messages.clone())
     }
-    fn add_message(&self, user_id: String) -> color_eyre::eyre::Result<()> {
-        todo!()
+    fn add_message(&mut self, user_id: String, message: String) -> color_eyre::eyre::Result<()> {
+        let chat = self.chat_state.iter_mut().find(|chat| chat.user_id == user_id).ok_or_eyre("chat not found")?;
+        chat.messages.push(message);
+
+        Ok(())
     }
-    fn reset_chat_state(&self, user_id: String) -> color_eyre::eyre::Result<()> {
-        todo!()
+    fn reset_chat_state(&mut self, user_id: String) -> color_eyre::eyre::Result<()> {
+        let chat = self.chat_state.iter_mut().find(|chat| chat.user_id == user_id).ok_or_eyre("chat not found")?;
+        chat.messages.clear();
+
+        Ok(())
     }
 
     fn get_permissions(&self, user_id: String) -> color_eyre::eyre::Result<Permissions> {
-        todo!()
+        let user = self.users.iter().find(|user| user.id == user_id).ok_or_eyre("user not found")?;
+
+        Ok(user.permissions.clone())
     }
     fn set_permissions(
-        &self,
+        &mut self,
         user_id: String,
         permissions: Permissions,
     ) -> color_eyre::eyre::Result<()> {
-        todo!()
+        let user = self.users.iter_mut().find(|user| user.id == user_id).ok_or_eyre("user not found")?;
+        user.permissions = permissions;
+
+        Ok(())
     }
 
     fn get_assignments(
-        &self,
-        subject: Option<String>,
-        due: Option<chrono::prelude::NaiveTime>,
-    ) -> color_eyre::eyre::Result<Vec<String>> {
-        todo!()
+            &self,
+            subject: Option<String>,
+            due: Option<chrono::prelude::NaiveTime>,
+        ) -> color_eyre::eyre::Result<HashMap<String, String>> {
+        Ok(self.assignments.clone())
     }
-    fn set_assignments(
-        &self,
-        subject: Option<String>,
-        assignment: String,
-    ) -> color_eyre::eyre::Result<()> {
-        todo!()
+    fn set_assignment(&mut self, subject: String, assignment: Option<String>) -> color_eyre::eyre::Result<()> {
+        match assignment {
+            Some(assignment) => self.assignments.insert(subject, assignment),
+            None => self.assignments.insert(subject, String::new()),
+        };
+
+        Ok(())
     }
 
-    fn get_schedule(&self, periods: Vec<Period>) -> color_eyre::eyre::Result<Period> {
-        todo!()
+    fn get_schedule(&self, periods: Vec<Period>) -> color_eyre::eyre::Result<Vec<Period>> {
+        Ok(self.schedule.clone())
     }
-    fn set_schedule(&self, periods: Vec<Period>) -> color_eyre::eyre::Result<()> {
-        todo!()
+    fn set_schedule(&mut self, periods: Vec<Period>) -> color_eyre::eyre::Result<()> {
+        self.schedule = periods;
+
+        Ok(())
     }
     fn overwrite_schedule(
-        &self,
+        &mut self,
         date: NaiveDate,
         periods: Vec<Period>,
     ) -> color_eyre::eyre::Result<()> {
-        todo!()
+        self.schedule_overwrite = Some(ScheduleOverwrite {
+            schedule: periods,
+            date,
+        });
+
+        Ok(())
     }
 }

@@ -22,7 +22,7 @@ Features:
 - [x] move telegram things into a separate module
 - [x] figure out how to actually fix the problem described below
 - [x] redo the types
-- [ ] write the state module, make it work in-ram [[@pc]]
+- [x] write the state module, make it work in-ram [[@pc]]
 - [ ] write the telegram module [[@pc]]
 - [ ] write the conversation logic [[@pc]]
 - [ ] add logging [[@pc]]
@@ -30,9 +30,10 @@ Features:
 - [ ] implement persistent storage [[@pc]]
 - [ ] wrap builds in a flake [[@pc]]
 - [ ] initial launch [[@pc]]
+- [ ] use references instead of cloning everything (part of why I'm doing this project is to learn that) [[@pc]]
+- [ ] add documentation [[@pc]]
 - [ ] research how to store files [[@phone]]
 - [ ] add file uploads [[@pc]]
-- [ ] add documentation [[@pc]]
 
 ## Server owner's manual (self-hosting)
 The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.
