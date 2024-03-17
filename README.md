@@ -23,7 +23,7 @@ Features:
 - [x] figure out how to actually fix the problem described below
 - [x] redo the types
 - [x] write the state module, make it work in-ram [[@pc]]
-- [ ] write the telegram module [[@pc]]
+- [x] write the telegram module [[@pc]]
 - [ ] write the conversation logic [[@pc]]
 - [ ] add logging [[@pc]]
 - [ ] improve error types [[@pc]]

@@ -43,9 +43,15 @@ pub enum Permissions {
 }
 
 pub trait Messenger {
-    fn fetch(&self) -> Result<()>;
-    fn last(&self) -> Result<Option<String>>;
-    fn reply(&self, message: String) -> Result<()>;
+    fn fetch(&mut self) -> Result<()>;
+    fn first(&self) -> Option<MessengerUpdate>;
+    fn reply(&mut self, message: String) -> Result<()>;
+}
+
+pub enum MessengerUpdate {
+    Text(String),
+    /// the param is their user_id
+    Contact(String),
 }
 
 pub mod storage;
