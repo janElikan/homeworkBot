@@ -14,6 +14,7 @@ pub struct Storage {
 }
 
 struct Chat {
+    id: String,
     user_id: String,
     messages: Vec<String>,
 }

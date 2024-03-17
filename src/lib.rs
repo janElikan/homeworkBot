@@ -48,9 +48,15 @@ pub trait Messenger {
     fn reply(&mut self, message: String) -> Result<()>;
 }
 
-pub enum MessengerUpdate {
+#[derive(Debug, Clone)]
+pub struct MessengerUpdate {
+    user_id: String,
+    content: MessageContent,
+}
+
+#[derive(Debug, Clone)]
+pub enum MessageContent {
     Text(String),
-    /// the param is their user_id
     Contact(String),
 }
 

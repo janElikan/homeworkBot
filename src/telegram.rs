@@ -1,6 +1,7 @@
 use color_eyre::eyre::{eyre, OptionExt, Result};
 use frankenstein::{
-    AllowedUpdate, Api, GetUpdatesParams, ReplyParameters, SendMessageParams, TelegramApi, Update, UpdateContent
+    AllowedUpdate, Api, GetUpdatesParams, ReplyParameters, SendMessageParams, TelegramApi, Update,
+    UpdateContent,
 };
 
 use crate::{Messenger, MessengerUpdate};
@@ -8,7 +9,7 @@ use crate::{Messenger, MessengerUpdate};
 pub struct Telegram {
     api: Api,
     updates: Vec<Update>,
-    last_processed_message: Option<i32>,
+    last_processed_message: Option<u32>,
 }
 
 impl Telegram {
@@ -47,15 +48,22 @@ impl Messenger for Telegram {
         let UpdateContent::Message(message) = &update.content else {
             return None;
         };
+        let user_id = message
+            .from
+            .clone()
+            .expect("couldn't read the sender id")
+            .id
+            .to_string();
 
         if let Some(contact) = &message.contact {
-            return Some(MessengerUpdate::Contact(contact.user_id?.to_string()));
+            let content = contact.user_id?.to_string();
+            return Some(MessengerUpdate { user_id, content });
         }
 
-        message
-            .text
-            .as_ref()
-            .map(|text| MessengerUpdate::Text(text.clone()))
+        message.text.as_ref().map(|text| MessengerUpdate {
+            user_id,
+            content: text.clone(),
+        })
     }
 
     fn reply(&mut self, text: String) -> Result<()> {
@@ -64,7 +72,9 @@ impl Messenger for Telegram {
             return Err(eyre!("Message is empty"));
         };
 
-        let reply_parameters = ReplyParameters::builder().message_id(message.message_id).build();
+        let reply_parameters = ReplyParameters::builder()
+            .message_id(message.message_id)
+            .build();
         let send_message_params = SendMessageParams::builder()
             .chat_id(message.chat.id)
             .text(text)
@@ -73,7 +83,7 @@ impl Messenger for Telegram {
 
         self.api.send_message(&send_message_params)?;
 
-        self.last_processed_message = Some(message.message_id);
+        self.last_processed_message = Some(update.update_id);
 
         Ok(())
     }
