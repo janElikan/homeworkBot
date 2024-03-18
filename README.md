@@ -72,4 +72,92 @@ Modules:
 - state
 - telegram
 
-I tried to do it too fast, without thinking the entire thing through completely. I'm pausing again for another architecture planning thing... This commit is going to be reverted soon.
+## Stream of consciousness
+My biggest problem right now is that I don't really understand how a conversation would work. So I'll think it through:
+
+What can the user send?
+- A contact, to change their role
+- a text message, which is probably the assignment
+- a time, time and text all of that is a period.
+
+What types do I have in the app?
+- A user with a fixed set of permissions
+- an assignment to a subject, dates are calculated based on
+- the schedule, which is itself a vector of
+- periods.
+
+The main thing app's users are gonna be doing is getting and setting assignments, the rest is admin/maintenance.
+
+### Assignment manipulation
+The set action is relatively simple:
+```text
+user: /set sci
+bot:  what's the assignment?
+user: section 8
+bot:  saved
+```
+
+The case for the subjects... I'm going to ignore it and set everything as lowercase.
+
+This also brings up an interesting issue: what to do if the user asks to `set` an assignment for a non-existant subject? Initially I thought that the subject should be created on the fly, but thinking about it...
+The subjects are in the schedule. So it should instead search the schedule, try to find the subject. If it succeeds, it should create the assignment, otherwise grab a closest match by name and ask the user if that's what they meant.
+
+The new part that I think I should implement is notifications. Teachers will have access to this system, so they should be able to notify the class. Probably.
+Actually nevermind, they should either do things in-time or DM them.
+
+The clear feature is going away, the assignment is always present. When it's not, it's getting rescheduled from the last lesson and that should be handled automatically.
+
+Now about getting them, that's more fun:
+```text
+user: /get
+bot: due tomorrow:
+bot: english: section 16's grammar
+bot: history: section 32
+bot: science: task 128
+bot: (button saying "next day")
+```
+
+But if they ask it in the middle of 2nd pair, it should respond with:
+```text
+user: /get
+bot: due today
+bot: history: section 32
+bot: science: task 128
+```
+
+So how should it get all that information?
+
+#### Loading data
+I'll represent internal parts of the system as a "chat" with types:
+```text
+main: telegram::new(token)
+telegram: Ok(())
+main: conversation::new(provider: telegram)
+main: state::new("file_store_path")
+state: Ok(Status::Loaded)
+
+main: updates?
+conversation: telegram?
+telegram: []
+conversation: []
+main: save.
+state: Ok(Status::Unchanged)
+
+main: updates?
+conversation: telegram?
+telegram: [{ chat_id, user_id, cmd: "set", args: "sci" }]
+conversation: reply("what's the assignment")
+telegram: Ok(())
+conversation: clear()
+telegram: Ok(())
+conversation: []
+main: save.
+state: Ok(Status::Unchanged)
+
+main: updates?
+conversation: telegram?
+telegram: [{ chat_id, user_id, msg: Text("task 128") }]
+```
+
+### Schedules
+I don't really know, plus they are fixed (apart from the overwrite). I'll read them from file for now and figure out the conversation later. Probably the bot should ask first though.
