@@ -5,6 +5,7 @@ use color_eyre::eyre::OptionExt;
 
 use crate::{Period, Permissions, State};
 
+#[derive(Debug)]
 pub struct Storage {
     chat_state: Vec<Chat>,
     users: Vec<User>,
@@ -13,17 +14,20 @@ pub struct Storage {
     schedule_overwrite: Option<ScheduleOverwrite>,
 }
 
+#[derive(Debug)]
 struct Chat {
     id: String,
     user_id: String,
     messages: Vec<String>,
 }
 
+#[derive(Debug)]
 struct User {
     id: String,
     permissions: Permissions,
 }
 
+#[derive(Debug)]
 struct ScheduleOverwrite {
     date: NaiveDate,
     schedule: Vec<Period>,
@@ -49,7 +53,7 @@ impl Default for Storage {
 }
 
 impl State for Storage {
-    fn get_chat_state(&self, user_id: String) -> color_eyre::eyre::Result<Vec<String>> {
+    fn get_chat_state(&self, chat_id: String, user_id: String) -> color_eyre::eyre::Result<Vec<String>> {
         let chat = self
             .chat_state
             .iter()
@@ -58,21 +62,27 @@ impl State for Storage {
 
         Ok(chat.messages.clone())
     }
-    fn add_message(&mut self, user_id: String, message: String) -> color_eyre::eyre::Result<()> {
+    fn add_message(&mut self, chat_id: String, user_id: String, message: String) -> color_eyre::eyre::Result<()> {
         let chat = self
             .chat_state
             .iter_mut()
-            .find(|chat| chat.user_id == user_id)
-            .ok_or_eyre("chat not found")?;
-        chat.messages.push(message);
+            .find(|chat| chat.user_id == user_id);
+
+        if let Some(chat) = chat {
+            chat.messages.push(message);
+            return Ok(());
+        }
+
+        let chat = Chat { id: chat_id, user_id, messages: vec![message] };
+        self.chat_state.push(chat);
 
         Ok(())
     }
-    fn reset_chat_state(&mut self, user_id: String) -> color_eyre::eyre::Result<()> {
+    fn reset_chat_state(&mut self,chat_id: String, user_id: String) -> color_eyre::eyre::Result<()> {
         let chat = self
             .chat_state
             .iter_mut()
-            .find(|chat| chat.user_id == user_id)
+            .find(|chat| chat.id == chat_id && chat.user_id == user_id)
             .ok_or_eyre("chat not found")?;
         chat.messages.clear();
 

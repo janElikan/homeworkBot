@@ -71,3 +71,5 @@ I'm temporarily ditching async because I can't figure out how to work… Get bac
 Modules:
 - state
 - telegram
+
+I tried to do it too fast, without thinking the entire thing through completely. I'm pausing again for another architecture planning thing... This commit is going to be reverted soon.

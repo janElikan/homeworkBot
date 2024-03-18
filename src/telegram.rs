@@ -54,13 +54,15 @@ impl Messenger for Telegram {
             .expect("couldn't read the sender id")
             .id
             .to_string();
+        let chat_id = message.chat.id.to_string();
 
         if let Some(contact) = &message.contact {
             let content = contact.user_id?.to_string();
-            return Some(MessengerUpdate { user_id, content });
+            return Some(MessengerUpdate { chat_id, user_id, content });
         }
 
         message.text.as_ref().map(|text| MessengerUpdate {
+            chat_id,
             user_id,
             content: text.clone(),
         })

@@ -6,9 +6,9 @@ use chrono::{NaiveDate, NaiveTime, Weekday};
 use color_eyre::eyre::Result;
 
 pub trait State {
-    fn get_chat_state(&self, user_id: String) -> Result<Vec<String>>;
-    fn add_message(&mut self, user_id: String, message: String) -> Result<()>;
-    fn reset_chat_state(&mut self, user_id: String) -> Result<()>;
+    fn get_chat_state(&self, chat_id: String,user_id: String) -> Result<Vec<String>>;
+    fn add_message(&mut self, chat_id: String,user_id: String, message: String) -> Result<()>;
+    fn reset_chat_state(&mut self, chat_id: String, user_id: String) -> Result<()>;
 
     fn get_permissions(&self, user_id: String) -> Result<Permissions>;
     fn set_permissions(&mut self, user_id: String, permissions: Permissions) -> Result<()>;
@@ -50,19 +50,26 @@ pub trait Messenger {
 
 #[derive(Debug, Clone)]
 pub struct MessengerUpdate {
+    chat_id: String,
     user_id: String,
-    content: MessageContent,
-}
-
-#[derive(Debug, Clone)]
-pub enum MessageContent {
-    Text(String),
-    Contact(String),
+    content: String,
 }
 
 pub mod storage;
 pub mod telegram;
 
 pub fn run(messenger: &mut dyn Messenger, state: &mut dyn State) -> Result<()> {
-    todo!();
+    messenger.fetch()?; // todo!("should only call this when needed")
+    let message = messenger.first();
+    let MessengerUpdate{chat_id, user_id, content: message} = match message {
+        Some(update) => update,
+        None => return Ok(()),
+    };
+    if message.starts_with("/") {
+        state.reset_chat_state(chat_id.clone(), user_id.clone())?;
+    };
+    state.add_message(chat_id, user_id, message)?;
+
+    messenger.reply("unimplemented".to_string())?;
+    Ok(())
 }

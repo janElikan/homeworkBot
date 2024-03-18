@@ -10,5 +10,10 @@ fn main() -> Result<()> {
     let mut bot = Telegram::new(&token)?;
     let mut store = Storage::new();
 
-    homeworkbot::run(&mut bot, &mut store)
+    println!("issued a token");
+
+    loop {
+        homeworkbot::run(&mut bot, &mut store).unwrap();
+        dbg!(&store);
+    }
 }
