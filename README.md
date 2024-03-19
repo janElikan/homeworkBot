@@ -24,7 +24,8 @@ Features:
 - [x] redo the types
 - [x] write the state module, make it work in-ram [[@pc]]
 - [x] write the telegram module [[@pc]]
-- [ ] write the conversation logic [[@pc]]
+- [ ] implement the flow described below [[@pc]]
+- [ ] fix everything that is broken because of the restructuring [[@pc]]
 - [ ] add logging [[@pc]]
 - [ ] implement persistent storage [[@pc]]
 - [ ] initial launch [[@pc]]
@@ -99,13 +100,12 @@ bot:  saved
 
 The case for the subjects... I'm going to ignore it and set everything as lowercase.
 
-This also brings up an interesting issue: what to do if the user asks to `set` an assignment for a non-existant subject? Initially I thought that the subject should be created on the fly, but thinking about it...
+This also brings up an interesting issue: what to do if the user asks to `set` an assignment for a nonexistent subject? Initially I thought that the subject should be created on the fly, but thinking about it...
 The subjects are in the schedule. So it should instead search the schedule, try to find the subject. If it succeeds, it should create the assignment, otherwise grab a closest match by name and ask the user if that's what they meant.
 
-The new part that I think I should implement is notifications. Teachers will have access to this system, so they should be able to notify the class. Probably.
-Actually nevermind, they should either do things in-time or DM them.
-
 The clear feature is going away, the assignment is always present. When it's not, it's getting rescheduled from the last lesson and that should be handled automatically.
+
+![drawing](assets/assignment_set.excalidraw.png)
 
 Now about getting them, that's more fun:
 ```text
@@ -125,39 +125,7 @@ bot: history: section 32
 bot: science: task 128
 ```
 
-So how should it get all that information?
-
-#### Loading data
-I'll represent internal parts of the system as a "chat" with types:
-```text
-main: telegram::new(token)
-telegram: Ok(())
-main: conversation::new(provider: telegram)
-main: state::new("file_store_path")
-state: Ok(Status::Loaded)
-
-main: updates?
-conversation: telegram?
-telegram: []
-conversation: []
-main: save.
-state: Ok(Status::Unchanged)
-
-main: updates?
-conversation: telegram?
-telegram: [{ chat_id, user_id, cmd: "set", args: "sci" }]
-conversation: reply("what's the assignment")
-telegram: Ok(())
-conversation: clear()
-telegram: Ok(())
-conversation: []
-main: save.
-state: Ok(Status::Unchanged)
-
-main: updates?
-conversation: telegram?
-telegram: [{ chat_id, user_id, msg: Text("task 128") }]
-```
+![drawing](assets/assignment_get.excalidraw.png)
 
 ### Schedules
 I don't really know, plus they are fixed (apart from the overwrite). I'll read them from file for now and figure out the conversation later. Probably the bot should ask first though.
