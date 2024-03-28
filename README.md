@@ -11,9 +11,12 @@ Features:
 
 ## Progress
 - [x] define the requirements
-- [ ] set up the project (flake)
-- [ ] define the valid states of the system
-- [ ] implement transitions between them
+- [x] set up the project (flake)
+- [x] get/set
+- [ ] refactor
+- [ ] admins
+- [ ] schedules
+- [ ] storage
 - [ ] refactor
 
 ## Server owner's manual (self-hosting)
