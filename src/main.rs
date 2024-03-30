@@ -4,14 +4,21 @@ use color_eyre::eyre::{OptionExt, Result};
 use frankenstein::{
     AsyncApi, AsyncTelegramApi, GetUpdatesParams, Message, SendMessageParams, Update, UpdateContent,
 };
-use std::{collections::HashMap, env};
+use std::{collections::HashMap, env, str::FromStr};
+use strum::EnumString;
 
 #[derive(Debug)]
 struct App {
     assignments: HashMap<String, Assignment>,
     users: HashMap<u64, User>,
-    chats: HashMap<i64, Vec<String>>,
+    chats: HashMap<i64, Chat>,
     schedule: HashMap<Weekday, Day>,
+}
+
+#[derive(Debug)]
+struct Chat {
+    command: Option<Command>,
+    args: Vec<String>,
 }
 
 #[derive(Debug)]
@@ -38,6 +45,13 @@ enum Role {
     Banned,
     User,
     Admin,
+}
+
+#[derive(Debug, EnumString)]
+#[strum(ascii_case_insensitive)]
+enum Command {
+    Get,
+    Set,
 }
 
 #[tokio::main]
@@ -73,64 +87,62 @@ async fn process_updates(api: &AsyncApi, state: &mut App, updates: &Vec<Update>)
 }
 
 async fn process_message(api: AsyncApi, state: &mut App, message: &Message) -> Result<()> {
-    let chat = message.chat.id;
+    let chat_id = message.chat.id;
 
     if let Some(message) = &message.text {
         let message = message.as_str();
 
-        if message.starts_with('/') {
+        if let Some(message) = message.strip_prefix('/') {
             let mut split = message.split(' ');
             let command = split.next().ok_or_eyre("expected to find a command")?;
-            state.reset_history(chat);
+            let command: Command = match command.parse() {
+                Ok(cmd) => cmd,
+                Err(_) => return send_message(&api, chat_id, "invalid command").await,
+            };
+            state.reset_chat(chat_id);
 
             match command {
-                "/get" => state.push_history(chat, String::from(command)),
-                "/set" => {
+                Command::Get => state.push_cmd(chat_id, command),
+                Command::Set => {
                     let subject = split.next();
                     let task: String = split.collect();
 
                     if subject.is_none() {
-                        state.push_history(chat, String::from(command));
+                        state.push_cmd(chat_id, command);
                     } else if task.is_empty() {
                         let subject = subject
                             .ok_or_eyre("expected to find a subject")?
                             .to_string();
 
-                        state.push_history(chat, String::from(command));
-                        state.push_history(chat, subject);
+                        state.push_cmd(chat_id, command);
+                        state.push_arg(chat_id, subject);
                     } else {
                         let subject = subject
                             .ok_or_eyre("expected to find a subject")?
                             .to_string();
 
-                        state.push_history(chat, String::from(command));
-                        state.push_history(chat, subject);
-                        state.push_history(chat, task);
+                        state.push_cmd(chat_id, command);
+                        state.push_arg(chat_id, subject);
+                        state.push_arg(chat_id, task);
                     }
                 }
-                _ => (),
             };
         } else {
-            state.push_history(chat, String::from(message));
+            state.push_arg(chat_id, String::from(message));
         };
 
-        let Some(history) = state.history(chat) else {
-            return send_message(&api, chat, "please enter a command").await;
+        let Some(chat) = state.get_chat(chat_id) else {
+            return send_message(&api, chat_id, "please enter a command").await;
         };
-        let mut history = history.iter();
+        let mut args = chat.args.iter();
 
-        let Some(command) = history.next() else {
-            println!("no command");
-            return Ok(());
-        };
-        let command = command.as_str();
+        let Some(command) = &chat.command else { return Ok(()); };
 
-        // TODO find a crate that does that with enums
         let response = match command {
-            "/get" => state.get(Local::now()),
-            "/set" => {
-                let subject = history.next();
-                let text: String = history.map(String::from).collect();
+            Command::Get => state.get(Local::now()),
+            Command::Set => {
+                let subject = args.next();
+                let text: String = args.map(String::from).collect();
 
                 if subject.is_none() {
                     wrap_message("what's the subject?")
@@ -152,14 +164,10 @@ async fn process_message(api: AsyncApi, state: &mut App, message: &Message) -> R
                     wrap_message("ok")
                 }
             }
-            _ => {
-                println!("no command");
-                return Ok(());
-            }
         };
 
         for text in response {
-            send_message(&api, chat, &text).await?;
+            send_message(&api, chat_id, &text).await?;
         }
     }
 
@@ -212,25 +220,45 @@ impl App {
         self.assignments.insert(subject, assignment);
     }
 
-    pub fn history(&self, chat: i64) -> Option<&Vec<String>> {
-        self.chats.get(&chat)
+    pub fn get_chat(&self, id: i64) -> Option<&Chat> {
+        self.chats.get(&id)
     }
 
-    pub fn push_history(&mut self, chat: i64, message: String) {
+    pub fn push_cmd(&mut self, chat: i64, command: Command) {
         match self.chats.get_mut(&chat) {
             None => {
-                self.chats.insert(chat, Vec::new());
+                self.chats.insert(chat, Chat {command: Some(command), args: Vec::new()});
             }
-            Some(chat) => chat.push(message),
+            Some(chat) => chat.command = Some(command),
         };
     }
 
-    pub fn reset_history(&mut self, chat: i64) {
+    pub fn push_arg(&mut self, chat: i64, arg: String) {
         match self.chats.get_mut(&chat) {
             None => {
-                self.chats.insert(chat, Vec::new());
+                self.chats.insert(chat, Chat {command: None, args: Vec::new()});
+            }
+            Some(chat) => chat.args.push(arg),
+        };
+    }
+
+    pub fn reset_chat(&mut self, chat: i64) {
+        match self.chats.get_mut(&chat) {
+            None => {
+                self.chats.insert(chat, Chat::new());
             }
             Some(chat) => chat.clear(),
         };
+    }
+}
+
+impl Chat {
+    pub const fn new() -> Self {
+        Self { command: None, args: Vec::new() }
+    }
+
+    pub fn clear(&mut self) {
+        self.command = None;
+        self.args.clear();
     }
 }
