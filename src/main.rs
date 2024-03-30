@@ -4,7 +4,7 @@ use frankenstein::{
 };
 use homeworkbot::{
     conversation::{self, NLPError},
-    App
+    App,
 };
 use std::env;
 
@@ -51,7 +51,10 @@ async fn process_message(api: AsyncApi, state: &mut App, message: &Message) -> R
                 }
             }
             Err(NLPError::InvalidCommand) => {
-                send_message(&api, chat_id, "invalid_command").await?;
+                send_message(&api, chat_id, "invalid command").await?;
+            }
+            Err(NLPError::InvalidWeekday) => {
+                send_message(&api, chat_id, "not a valid weekday").await?;
             }
             Err(NLPError::ChatNotFound) => {
                 eprintln!("Chat #{chat_id} not found, message: {message}");

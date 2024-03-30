@@ -8,7 +8,8 @@ pub struct App {
     pub assignments: HashMap<String, Assignment>,
     pub users: HashMap<u64, User>,
     pub chats: HashMap<i64, Chat>,
-    pub schedule: HashMap<Weekday, Day>,
+    pub schedule: HashMap<Weekday, Vec<Option<String>>>,
+    pub timetable: Vec<(NaiveTime, NaiveTime)>,
 }
 
 #[derive(Debug)]
@@ -21,12 +22,6 @@ pub struct Chat {
 pub struct Assignment {
     pub text: String,
     pub attachments: Vec<String>, // of UUIDs
-}
-
-#[derive(Debug)]
-pub struct Day {
-    pub timetable: Vec<(NaiveTime, NaiveTime)>,
-    pub periods: Vec<Option<String>>,
 }
 
 #[derive(Debug)]
@@ -48,6 +43,7 @@ pub enum Role {
 pub enum Command {
     Get,
     Set,
+    SetSchedule,
 }
 
 pub mod conversation;
@@ -66,6 +62,7 @@ impl App {
             users: HashMap::new(),
             chats: HashMap::new(),
             schedule: HashMap::new(),
+            timetable: Vec::new(),
         }
     }
 
@@ -80,6 +77,10 @@ impl App {
 
     pub fn set(&mut self, subject: String, assignment: Assignment) {
         self.assignments.insert(subject, assignment);
+    }
+
+    pub fn set_schedule(&mut self, weekday: Weekday, schedule: Vec<Option<String>>) {
+        self.schedule.insert(weekday, schedule);
     }
 
     #[must_use]

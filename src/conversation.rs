@@ -1,9 +1,10 @@
 use super::{App, Assignment, Command};
-use chrono::Local;
+use chrono::{Local, Weekday};
 
 /// natural language processing error
 pub enum NLPError {
     InvalidCommand,
+    InvalidWeekday,
     ChatNotFound,
     NothingToDo,
     ParseError,
@@ -14,6 +15,7 @@ pub enum NLPError {
 /// # Errors
 ///
 /// - `InvalidCommand` if the `message` starts with "/" but is not in the `homeworkbot::Command`
+/// - `InvalidWeekday` if a weekday is expected but something else is given
 /// - `ChatNotFound` if `message` is not a command and `chat_id` is not in `state.chats`
 /// - `NothingToDo` when there's no active command in the current chat and the user isn't calling a
 /// new one
@@ -54,14 +56,22 @@ pub fn process_message(
                     state.push_arg(chat_id, task);
                 }
             }
+            Command::SetSchedule => {
+                state.push_cmd(chat_id, command);
+                if let Some(weekday) = split.next() {
+                    parse_weekday(weekday)?; // to check if it's valid
+                    state.push_arg(chat_id, String::from(weekday));
+                }
+            }
         };
     } else {
         state.push_arg(chat_id, message);
     };
 
-    let Some(chat) = state.get_chat(chat_id) else {
-        return Err(NLPError::ChatNotFound);
-    };
+    // what a hacky workaround :/
+    // going to fix after alpha
+    let chat = state.chats.get_mut(&chat_id).ok_or(NLPError::ChatNotFound)?;
+
     let mut args = chat.args.iter();
 
     let command = chat.command.clone().ok_or(NLPError::NothingToDo)?;
@@ -90,6 +100,47 @@ pub fn process_message(
                 wrap_message("ok")
             }
         }
+        Command::SetSchedule => {
+            let weekday = args.next();
+            let subjects = args.next();
+
+            if weekday.is_none() {
+                wrap_message("for what weekday?")
+            } else if subjects.is_none() {
+                if let Err(err) = parse_weekday(weekday.ok_or(NLPError::ParseError)?) {
+                    // at least it works
+                    // for now...
+                    chat.args.pop();
+                    return Err(err);
+                }
+
+                vec![
+                    "list the subjects (comma-separated)".to_string(),
+                    "example:".to_string(),
+                    "english, science, cs".to_string(),
+                    "use 'none' if some are missing, example:".to_string(),
+                    "none, english, none, science".to_string(),
+                ]
+            } else {
+                let weekday = parse_weekday(weekday.ok_or(NLPError::ParseError)?)?;
+                let schedule: Vec<_> = subjects
+                    .ok_or(NLPError::ParseError)?
+                    .split(',')
+                    .map(str::trim)
+                    .map(|subject| {
+                        if subject.to_lowercase() == "none" {
+                            None
+                        } else {
+                            Some(subject.to_string())
+                        }
+                    })
+                    .collect();
+
+                state.set_schedule(weekday, schedule);
+
+                wrap_message("ok")
+            }
+        }
     };
 
     Ok(response)
@@ -97,4 +148,8 @@ pub fn process_message(
 
 fn wrap_message(text: &str) -> Vec<String> {
     vec![String::from(text)]
+}
+
+fn parse_weekday(day: &str) -> Result<Weekday, NLPError> {
+    day.parse().map_err(|_| NLPError::InvalidWeekday)
 }

@@ -14,12 +14,16 @@ Features:
 - [x] set up the project (flake)
 - [x] get/set
 - [x] refactor
-- [ ] schedules
+- [ ] setting schedules
+- [ ] schedule support for `/get`
 - [ ] persistent storage
 - [ ] alpha-release
+- [ ] rewrite how `Chat.args` are stored (Weekday support etc.)
 - [ ] admins
-- [ ] subject name guessing
+- [ ] timetables
+- [ ] subject name guessing (schedule support for `/set`)
 - [ ] refactor
+- [ ] stable release
 
 note: add /cancel command
 and /delete
