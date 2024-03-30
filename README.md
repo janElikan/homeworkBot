@@ -16,8 +16,21 @@ Features:
 - [ ] refactor
 - [ ] admins
 - [ ] schedules
+- [ ] subject name guessing
 - [ ] storage
 - [ ] refactor
+
+note: add /cancel command
+and /delete
+
+I should probably make history into a hashmap as well, like:
+```json
+{
+    command: "set",
+    subject: null,
+    text: null,
+}
+```
 
 ## Server owner's manual (self-hosting)
 The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.

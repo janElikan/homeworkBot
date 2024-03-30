@@ -1,3 +1,4 @@
+#![allow(unused)]
 use chrono::{DateTime, Local, NaiveDate, NaiveDateTime, NaiveTime, Weekday};
 use color_eyre::eyre::{OptionExt, Result};
 use frankenstein::{
@@ -74,88 +75,86 @@ async fn process_updates(api: &AsyncApi, state: &mut App, updates: &Vec<Update>)
 async fn process_message(api: AsyncApi, state: &mut App, message: &Message) -> Result<()> {
     let chat = message.chat.id;
 
-    // TODO refactor
     if let Some(message) = &message.text {
         let message = message.as_str();
 
-        let response = if message.starts_with('/') {
+        if message.starts_with('/') {
             let mut split = message.split(' ');
             let command = split.next().ok_or_eyre("expected to find a command")?;
             state.reset_history(chat);
 
-            // TODO find a crate that does that with enums
             match command {
-                "/get" => state.get(Local::now()),
+                "/get" => state.push_history(chat, String::from(command)),
                 "/set" => {
                     let subject = split.next();
-                    let text: String = split.collect();
+                    let task: String = split.collect();
 
                     if subject.is_none() {
                         state.push_history(chat, String::from(command));
-
-                        wrap_message("what's the subject?")
-                    } else if text.is_empty() {
+                    } else if task.is_empty() {
                         let subject = subject
                             .ok_or_eyre("expected to find a subject")?
                             .to_string();
 
                         state.push_history(chat, String::from(command));
                         state.push_history(chat, subject);
-
-                        wrap_message("what's the assignment?")
                     } else {
                         let subject = subject
                             .ok_or_eyre("expected to find a subject")?
                             .to_string();
 
-                        state.set(
-                            subject,
-                            Assignment {
-                                text,
-                                attachments: Vec::new(),
-                            },
-                        );
-
-                        wrap_message("ok")
+                        state.push_history(chat, String::from(command));
+                        state.push_history(chat, subject);
+                        state.push_history(chat, task);
                     }
                 }
-                _ => wrap_message("command not found"),
-            }
+                _ => (),
+            };
         } else {
             state.push_history(chat, String::from(message));
+        };
 
-            let Some(history) = state.history(chat) else {
-                return send_message(&api, chat, "please enter a command").await;
-            };
-            let mut history = history.iter();
+        let Some(history) = state.history(chat) else {
+            return send_message(&api, chat, "please enter a command").await;
+        };
+        let mut history = history.iter();
 
-            let Some(command) = history.next() else {println!("no command");return Ok(())};
-            let command = command.as_str();
+        let Some(command) = history.next() else {
+            println!("no command");
+            return Ok(());
+        };
+        let command = command.as_str();
 
-            match command {
-                "/set" => {
-                    let subject = history.next();
-                    let text: String = history.map(String::from).collect();
+        // TODO find a crate that does that with enums
+        let response = match command {
+            "/get" => state.get(Local::now()),
+            "/set" => {
+                let subject = history.next();
+                let text: String = history.map(String::from).collect();
 
-                    if text.is_empty() {
-                        wrap_message("what's the assignment?")
-                    } else {
-                        let subject = subject
-                            .ok_or_eyre("expected to find a subject")?
-                            .to_string();
+                if subject.is_none() {
+                    wrap_message("what's the subject?")
+                } else if text.is_empty() {
+                    wrap_message("what's the assignment?")
+                } else {
+                    let subject = subject
+                        .ok_or_eyre("expected to find a subject")?
+                        .to_string();
 
-                        state.set(
-                            subject,
-                            Assignment {
-                                text,
-                                attachments: Vec::new(),
-                            },
-                        );
+                    state.set(
+                        subject,
+                        Assignment {
+                            text,
+                            attachments: Vec::new(),
+                        },
+                    );
 
-                        wrap_message("ok")
-                    }
-                },
-                _ => {println!("no command");return Ok(())},
+                    wrap_message("ok")
+                }
+            }
+            _ => {
+                println!("no command");
+                return Ok(());
             }
         };
 
