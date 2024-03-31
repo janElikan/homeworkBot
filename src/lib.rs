@@ -1,10 +1,11 @@
 #![allow(unused)]
 use chrono::{DateTime, Datelike, Local, NaiveTime, Weekday};
-use tracing::{debug, info, trace};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use strum::EnumString;
+use tracing::{debug, info, trace};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct App {
     pub assignments: HashMap<String, Assignment>,
     pub users: HashMap<u64, User>,
@@ -13,33 +14,33 @@ pub struct App {
     pub timetable: Vec<(NaiveTime, NaiveTime)>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Chat {
     pub command: Option<Command>,
     pub args: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Assignment {
     pub text: String,
     pub attachments: Vec<String>, // of UUIDs
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct User {
     pub first_name: String,
     pub last_name: Option<String>,
     pub role: Role,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum Role {
     Banned,
     User,
     Admin,
 }
 
-#[derive(Debug, Clone, EnumString)]
+#[derive(Debug, Clone, EnumString, Serialize, Deserialize)]
 #[strum(ascii_case_insensitive)]
 pub enum Command {
     #[strum(

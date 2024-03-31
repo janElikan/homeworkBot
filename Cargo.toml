@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = "0.4.35"
+chrono = { version = "0.4.35", features = ["serde"] }
 color-eyre = "0.6.2"
 frankenstein = { version = "0.30.4", features = ["async-http-client"] }
+ron = "0.8"
+serde = { version = "1", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
 tokio = { version = "1.36.0", features = ["full"] }
 tracing = "0.1.40"

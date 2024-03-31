@@ -18,7 +18,8 @@ Features:
 - [x] schedule support for `/get`
 - [x] alias `/tomorrow` to `/get` for familiarity (the last bot I wrote for the same class had `/tomorrow`)
 - [x] logging
-- [ ] persistent storage
+- [x] persistent storage
+- [ ] `/all` command
 - [ ] add date support to `/get`
 - [ ] alpha-release
 - [ ] switch command args from string to enum

@@ -6,22 +6,25 @@ use homeworkbot::{
     conversation::{self, NLPError},
     App,
 };
-use tracing::{debug, info, error};
+use std::{env, fs};
+use tracing::{debug, error, info};
 use tracing_subscriber::EnvFilter;
-use std::env;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let api = setup()?;
+    let (api, state_path) = setup()?;
     info!("Hello, world!");
 
     let mut cache = GetUpdatesParams::builder().build();
-    let mut state = App::new();
+    let mut state = match restore_state(&state_path) {
+        Ok(state) => state,
+        Err(_) => App::new(),
+    };
 
     loop {
         let response = api.get_updates(&cache).await?;
 
-        process_updates(&api, &mut state, &response.result).await?;
+        process_updates(&api, &mut state, &state_path, &response.result).await?;
 
         if let Some(update) = response.result.last() {
             cache = GetUpdatesParams::builder()
@@ -33,18 +36,23 @@ async fn main() -> Result<()> {
     }
 }
 
-async fn process_updates(api: &AsyncApi, state: &mut App, updates: &Vec<Update>) -> Result<()> {
+async fn process_updates(api: &AsyncApi, state: &mut App, state_path: &str, updates: &Vec<Update>) -> Result<()> {
     for update in updates {
         if let UpdateContent::Message(message) = &update.content {
             let api = api.clone();
-            process_message(api, state, message).await?;
+            process_message(api, state, state_path, message).await?;
         }
     }
 
     Ok(())
 }
 
-async fn process_message(api: AsyncApi, state: &mut App, message: &Message) -> Result<()> {
+async fn process_message(
+    api: AsyncApi,
+    state: &mut App,
+    state_path: &str,
+    message: &Message,
+) -> Result<()> {
     let chat_id = message.chat.id;
 
     if let Some(message) = &message.text {
@@ -55,6 +63,11 @@ async fn process_message(api: AsyncApi, state: &mut App, message: &Message) -> R
                 info!(?response, "replied: ");
                 for text in response {
                     send_message(&api, chat_id, &text).await?;
+
+                    if &text == "ok" {
+                        save_state(state_path, state)?;
+                        info!("saved state");
+                    }
                 }
             }
             Err(NLPError::InvalidCommand) => {
@@ -89,12 +102,31 @@ async fn send_message(api: &AsyncApi, chat: i64, text: &str) -> Result<()> {
     Ok(())
 }
 
-fn setup() -> Result<AsyncApi> {
+fn save_state(path: &str, state: &App) -> Result<()> {
+    let state = ron::to_string(state)?;
+
+    fs::write(path, state)?;
+
+    Ok(())
+}
+
+fn restore_state(path: &str) -> Result<App> {
+    let state = fs::read_to_string(path)?;
+
+    let state = ron::from_str(&state)?;
+
+    Ok(state)
+}
+
+fn setup() -> Result<(AsyncApi, String)> {
     color_eyre::install()?;
 
-    tracing_subscriber::fmt::fmt().with_env_filter(EnvFilter::from_default_env()).init();
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
 
     let token = env::var("BOT_TOKEN").expect("The BOT_TOKEN environment variable was not set.");
+    let path = env::var("STATE_PATH").expect("The STATE_PATH environment variable was not set.");
 
-    Ok(AsyncApi::new(&token))
+    Ok((AsyncApi::new(&token), path))
 }

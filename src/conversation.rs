@@ -100,6 +100,7 @@ pub fn process_message(
 
             info!(%due);
 
+            chat.clear();
             state.get(due)
         }
         Command::Set => {
