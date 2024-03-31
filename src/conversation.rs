@@ -37,7 +37,7 @@ pub fn process_message(
         state.reset_chat(chat_id);
 
         match command {
-            Command::Get => state.push_cmd(chat_id, command),
+            Command::Get | Command::GetAll => state.push_cmd(chat_id, command),
             Command::Set => {
                 let subject = split.next();
                 let task: String = split.collect();
@@ -101,7 +101,17 @@ pub fn process_message(
             info!(%due);
 
             chat.clear();
-            state.get(due)
+
+            let assignments = state.get(due);
+            if assignments.is_empty() {
+                wrap_message("there's nothing")
+            } else {
+                assignments
+            }
+        }
+        Command::GetAll => {
+            chat.clear();
+            state.get_all()
         }
         Command::Set => {
             let subject = args.next();

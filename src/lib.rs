@@ -50,6 +50,8 @@ pub enum Command {
         serialize = "due"
     )]
     Get,
+    #[strum(serialize = "getall", serialize = "all")]
+    GetAll,
     Set,
     SetSchedule,
 }
@@ -72,6 +74,14 @@ impl App {
             schedule: HashMap::new(),
             timetable: Vec::new(),
         }
+    }
+
+    #[must_use]
+    pub fn get_all(&self) -> Vec<String> {
+        self.assignments
+            .iter()
+            .map(|(subject, assignment)| format!("{}: {}", subject, assignment.text))
+            .collect()
     }
 
     #[must_use]

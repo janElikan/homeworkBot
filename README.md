@@ -1,3 +1,5 @@
+> [!WARNING] This is a work-in-progress
+
 > A homework assignment keeping telegram bot
 
 Our class in high school has a problem with assignments. Teachers would constantly forget to put them into the system they were supposed to use and tell us to remember the assignments instead. No-one did, so they kept asking me. I grew tired of that, so I made this:
@@ -19,8 +21,7 @@ Features:
 - [x] alias `/tomorrow` to `/get` for familiarity (the last bot I wrote for the same class had `/tomorrow`)
 - [x] logging
 - [x] persistent storage
-- [ ] `/all` command
-- [ ] add date support to `/get`
+- [x] `/all` command
 - [ ] alpha-release
 - [ ] switch command args from string to enum
 - [ ] split process_message

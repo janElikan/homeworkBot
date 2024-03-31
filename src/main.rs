@@ -36,7 +36,12 @@ async fn main() -> Result<()> {
     }
 }
 
-async fn process_updates(api: &AsyncApi, state: &mut App, state_path: &str, updates: &Vec<Update>) -> Result<()> {
+async fn process_updates(
+    api: &AsyncApi,
+    state: &mut App,
+    state_path: &str,
+    updates: &Vec<Update>,
+) -> Result<()> {
     for update in updates {
         if let UpdateContent::Message(message) = &update.content {
             let api = api.clone();
