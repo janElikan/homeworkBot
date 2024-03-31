@@ -1,5 +1,5 @@
 use super::{App, Assignment, Command};
-use chrono::{Local, Weekday};
+use chrono::{Days, Local, NaiveTime, Weekday};
 
 /// natural language processing error
 pub enum NLPError {
@@ -57,10 +57,17 @@ pub fn process_message(
                 }
             }
             Command::SetSchedule => {
+                let weekday = split.next();
+                let periods: String = split.collect();
+
                 state.push_cmd(chat_id, command);
-                if let Some(weekday) = split.next() {
+                if let Some(weekday) = weekday {
                     parse_weekday(weekday)?; // to check if it's valid
                     state.push_arg(chat_id, String::from(weekday));
+                }
+
+                if !periods.is_empty() {
+                    state.push_arg(chat_id, periods);
                 }
             }
         };
@@ -70,14 +77,30 @@ pub fn process_message(
 
     // what a hacky workaround :/
     // going to fix after alpha
-    let chat = state.chats.get_mut(&chat_id).ok_or(NLPError::ChatNotFound)?;
+    let chat = state
+        .chats
+        .get_mut(&chat_id)
+        .ok_or(NLPError::ChatNotFound)?;
 
     let mut args = chat.args.iter();
 
     let command = chat.command.clone().ok_or(NLPError::NothingToDo)?;
 
     let response = match command {
-        Command::Get => state.get(Local::now()),
+        Command::Get => {
+            let now = Local::now();
+
+            let due =
+                if now.time() > NaiveTime::from_hms_opt(12, 0, 0).ok_or(NLPError::ParseError)? {
+                    now + Days::new(1)
+                } else {
+                    now
+                };
+
+            dbg!(due);
+
+            state.get(due)
+        }
         Command::Set => {
             let subject = args.next();
             let text: String = args.map(String::from).collect();
@@ -89,6 +112,7 @@ pub fn process_message(
             } else {
                 let subject = subject.ok_or(NLPError::ParseError)?.to_string();
 
+                chat.clear();
                 state.set(
                     subject,
                     Assignment {
@@ -136,6 +160,7 @@ pub fn process_message(
                     })
                     .collect();
 
+                chat.clear();
                 state.set_schedule(weekday, schedule);
 
                 wrap_message("ok")

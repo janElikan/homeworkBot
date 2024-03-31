@@ -14,11 +14,15 @@ Features:
 - [x] set up the project (flake)
 - [x] get/set
 - [x] refactor
-- [ ] setting schedules
-- [ ] schedule support for `/get`
+- [x] setting schedules
+- [x] schedule support for `/get`
+- [x] alias `/tomorrow` to `/get` for familiarity (the last bot I wrote for the same class had `/tomorrow`)
+- [ ] logging
 - [ ] persistent storage
+- [ ] add date support to `/get`
 - [ ] alpha-release
-- [ ] rewrite how `Chat.args` are stored (Weekday support etc.)
+- [ ] switch command args from string to enum
+- [ ] split process_message
 - [ ] admins
 - [ ] timetables
 - [ ] subject name guessing (schedule support for `/set`)
@@ -146,6 +150,12 @@ enum Role {
     Banned,
     User,
     Admin,
+}
+
+enum Argument {
+    Text(String),
+    User(u64),
+    Weekday(Weekday),
 }
 ```
 

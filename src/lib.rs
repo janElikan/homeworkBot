@@ -1,5 +1,5 @@
 #![allow(unused)]
-use chrono::{DateTime, Local, NaiveTime, Weekday};
+use chrono::{DateTime, Datelike, Local, NaiveTime, Weekday};
 use std::collections::HashMap;
 use strum::EnumString;
 
@@ -41,6 +41,12 @@ pub enum Role {
 #[derive(Debug, Clone, EnumString)]
 #[strum(ascii_case_insensitive)]
 pub enum Command {
+    #[strum(
+        serialize = "get",
+        serialize = "tomorrow",
+        serialize = "to",
+        serialize = "due"
+    )]
     Get,
     Set,
     SetSchedule,
@@ -68,9 +74,18 @@ impl App {
 
     #[must_use]
     pub fn get(&self, due: DateTime<Local>) -> Vec<String> {
-        // TODO implement due lookup
+        let Some(schedule) = self.schedule.get(&due.weekday()) else {
+            return Vec::new();
+        };
+
+        let schedule: Vec<&String> = schedule
+            .iter()
+            .filter_map(|period| period.as_ref())
+            .collect();
+
         self.assignments
             .iter()
+            .filter(|(subject, _)| schedule.contains(subject))
             .map(|(subject, assignment)| format!("{}: {}", subject, assignment.text))
             .collect()
     }
