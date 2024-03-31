@@ -1,5 +1,6 @@
 use super::{App, Assignment, Command};
 use chrono::{Days, Local, NaiveTime, Weekday};
+use tracing::info;
 
 /// natural language processing error
 pub enum NLPError {
@@ -97,7 +98,7 @@ pub fn process_message(
                     now
                 };
 
-            dbg!(due);
+            info!(%due);
 
             state.get(due)
         }

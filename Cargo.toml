@@ -9,6 +9,8 @@ color-eyre = "0.6.2"
 frankenstein = { version = "0.30.4", features = ["async-http-client"] }
 strum = { version = "0.26.2", features = ["derive"] }
 tokio = { version = "1.36.0", features = ["full"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 
 [lints.rust]
 unsafe_code = "forbid"

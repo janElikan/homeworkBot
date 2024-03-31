@@ -1,5 +1,6 @@
 #![allow(unused)]
 use chrono::{DateTime, Datelike, Local, NaiveTime, Weekday};
+use tracing::{debug, info, trace};
 use std::collections::HashMap;
 use strum::EnumString;
 
@@ -83,6 +84,8 @@ impl App {
             .filter_map(|period| period.as_ref())
             .collect();
 
+        trace!(%due, ?schedule, "getting assignments for this day:");
+
         self.assignments
             .iter()
             .filter(|(subject, _)| schedule.contains(subject))
@@ -91,10 +94,12 @@ impl App {
     }
 
     pub fn set(&mut self, subject: String, assignment: Assignment) {
+        info!(%subject, ?assignment, "updating assignment");
         self.assignments.insert(subject, assignment);
     }
 
     pub fn set_schedule(&mut self, weekday: Weekday, schedule: Vec<Option<String>>) {
+        info!(%weekday, ?schedule, "updating schedule");
         self.schedule.insert(weekday, schedule);
     }
 
@@ -104,6 +109,7 @@ impl App {
     }
 
     pub fn push_cmd(&mut self, chat: i64, command: Command) {
+        debug!(%chat, ?command, "setting chat command");
         match self.chats.get_mut(&chat) {
             None => {
                 self.chats.insert(
@@ -119,6 +125,7 @@ impl App {
     }
 
     pub fn push_arg(&mut self, chat: i64, arg: String) {
+        debug!(%chat, %arg, "adding chat argument");
         match self.chats.get_mut(&chat) {
             None => {
                 self.chats.insert(
@@ -134,6 +141,7 @@ impl App {
     }
 
     pub fn reset_chat(&mut self, chat: i64) {
+        debug!(%chat, "resetting chat history");
         match self.chats.get_mut(&chat) {
             None => {
                 self.chats.insert(chat, Chat::new());

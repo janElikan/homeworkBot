@@ -17,7 +17,7 @@ Features:
 - [x] setting schedules
 - [x] schedule support for `/get`
 - [x] alias `/tomorrow` to `/get` for familiarity (the last bot I wrote for the same class had `/tomorrow`)
-- [ ] logging
+- [x] logging
 - [ ] persistent storage
 - [ ] add date support to `/get`
 - [ ] alpha-release
