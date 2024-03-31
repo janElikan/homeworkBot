@@ -1,3 +1,5 @@
+use std::env;
+
 use super::{App, Assignment, Command};
 use chrono::{Days, Local, NaiveTime, Weekday};
 use tracing::info;
@@ -6,6 +8,7 @@ use tracing::info;
 pub enum NLPError {
     InvalidCommand,
     InvalidWeekday,
+    NoPermission,
     ChatNotFound,
     NothingToDo,
     ParseError,
@@ -39,6 +42,8 @@ pub fn process_message(
         match command {
             Command::Get | Command::GetAll => state.push_cmd(chat_id, command),
             Command::Set => {
+                permission_check(chat_id)?;
+
                 let subject = split.next();
                 let task: String = split.collect();
 
@@ -58,6 +63,8 @@ pub fn process_message(
                 }
             }
             Command::Delete => {
+                permission_check(chat_id)?;
+
                 let subject = split.next();
 
                 if subject.is_none() {
@@ -70,6 +77,8 @@ pub fn process_message(
                 }
             }
             Command::SetSchedule => {
+                permission_check(chat_id)?;
+
                 let weekday = split.next();
                 let periods: String = split.collect();
 
@@ -126,6 +135,8 @@ pub fn process_message(
             state.get_all()
         }
         Command::Set => {
+            permission_check(chat_id)?;
+
             let subject = args.next();
             let text: String = args.map(String::from).collect();
 
@@ -149,6 +160,8 @@ pub fn process_message(
             }
         }
         Command::Delete => {
+            permission_check(chat_id)?;
+
             let subject = args.next();
 
             if subject.is_none() {
@@ -163,6 +176,8 @@ pub fn process_message(
             }
         }
         Command::SetSchedule => {
+            permission_check(chat_id)?;
+
             let weekday = args.next();
             let subjects = args.next();
 
@@ -215,4 +230,21 @@ fn wrap_message(text: &str) -> Vec<String> {
 
 fn parse_weekday(day: &str) -> Result<Weekday, NLPError> {
     day.parse().map_err(|_| NLPError::InvalidWeekday)
+}
+
+/// # Errors
+/// Returns `NLPError::NoPermission` if the chat is not trusted (non-admin).
+///
+/// TODO this function is currently a band-aid that only allows one user in. Also it reads ENV
+fn permission_check(chat_id: i64) -> Result<(), NLPError> {
+    let admin_chat_id: i64 = env::var("ADMIN_CHAT_ID")
+        .map_err(|_| NLPError::NoPermission)?
+        .parse()
+        .map_err(|_| NLPError::NoPermission)?;
+
+    if chat_id != admin_chat_id {
+        return Err(NLPError::NoPermission);
+    }
+
+    Ok(())
 }

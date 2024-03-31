@@ -1,4 +1,4 @@
-> [!WARNING] This is a work-in-progress
+> [!WARNING] This is a work-in-progress, I'm currently focused on fast iteration and shipping it ASAP
 
 > A homework assignment keeping telegram bot
 
@@ -26,18 +26,30 @@ Features:
 - [ ] alpha-release
 - [ ] switch command args from string to enum
 - [ ] general refactor
-- [ ] split process_message
+- [ ] split `process_message`
 - [ ] admins
 - [ ] timetables
 - [ ] subject name guessing (schedule support for `/set`)
 - [ ] the next-day button
-- [ ] refactor (and rename NLPError)
+- [ ] make `/delete` error on nonexistent subject
+- [ ] refactor (and rename `NLPError`)
+- [ ] graceful shutdown
 - [ ] stable release
 
 ## Server owner's manual (self-hosting)
 The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.
 
 \<binary installation instructions here />
+
+> [!WARNING] again, this is a work-in-progress, but here's how you can run it now
+
+```shell
+> export BOT_TOKEN=(redacted)
+> export STATE_PATH=/tmp/bot_state.ron
+> export ADMIN_CHAT_ID=(redacted)
+> export RUST_LOG=debug
+> cargo run
+```
 
 ## Building from source
 You'll need any machine that has the Nix package manager on it.

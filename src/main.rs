@@ -75,6 +75,10 @@ async fn process_message(
                     }
                 }
             }
+            Err(NLPError::NoPermission) => {
+                info!("permission denied");
+                send_message(&api, chat_id, "permission denied").await?;
+            }
             Err(NLPError::InvalidCommand) => {
                 info!("asked for a valid command");
                 send_message(&api, chat_id, "invalid command").await?;
