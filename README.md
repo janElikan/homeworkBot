@@ -23,7 +23,7 @@ Features:
 - [x] persistent storage
 - [x] `/all` command
 - [x] `/delete` command
-- [ ] alpha-release
+- [x] alpha-release
 - [ ] switch command args from string to enum
 - [ ] general refactor
 - [ ] split `process_message`
@@ -49,6 +49,8 @@ The server is made as simple as possible, it's only capable of managing data for
 > export ADMIN_CHAT_ID=(redacted)
 > export RUST_LOG=debug
 > cargo run
+# building
+> nix build
 ```
 
 ## Building from source

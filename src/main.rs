@@ -63,6 +63,37 @@ async fn process_message(
     if let Some(message) = &message.text {
         info!(%chat_id, %message, "received:");
 
+        // greetings
+        match message.as_str() {
+            "/start" => {
+                send_message(&api, chat_id, "Hi!").await?;
+                send_message(&api, chat_id, "You probably want to use the /get command (unless you're an admin, then run /help)").await?;
+                return Ok(());
+            }
+            "/help" => {
+                send_message(
+                    &api,
+                    chat_id,
+                    "Commands:\n/get or /tomorrow\n/all or /getall\n/changelog or /version",
+                )
+                .await?;
+                send_message(
+                    &api,
+                    chat_id,
+                    "Admin commands:\n/set\n/delete or /setschedule",
+                )
+                .await?;
+                return Ok(());
+            }
+            "/version" | "/changelog" => {
+                send_message(&api, chat_id, "Version 1.0.0-alpha").await?;
+                send_message(&api, chat_id, "Rewritten from scratch").await?;
+                send_message(&api, chat_id, "Here be dragons").await?;
+                return Ok(());
+            }
+            _ => (),
+        }
+
         match conversation::process_message(chat_id, String::from(message), state) {
             Ok(response) => {
                 info!(?response, "replied: ");
