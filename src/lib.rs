@@ -52,6 +52,7 @@ pub enum Command {
     Get,
     #[strum(serialize = "getall", serialize = "all")]
     GetAll,
+    Delete,
     Set,
     SetSchedule,
 }
@@ -107,6 +108,11 @@ impl App {
     pub fn set(&mut self, subject: String, assignment: Assignment) {
         info!(%subject, ?assignment, "updating assignment");
         self.assignments.insert(subject, assignment);
+    }
+
+    pub fn delete(&mut self, subject: String) {
+        info!(%subject, "deleting assignment");
+        self.assignments.remove(&subject);
     }
 
     pub fn set_schedule(&mut self, weekday: Weekday, schedule: Vec<Option<String>>) {

@@ -22,17 +22,17 @@ Features:
 - [x] logging
 - [x] persistent storage
 - [x] `/all` command
+- [x] `/delete` command
 - [ ] alpha-release
 - [ ] switch command args from string to enum
+- [ ] general refactor
 - [ ] split process_message
 - [ ] admins
 - [ ] timetables
 - [ ] subject name guessing (schedule support for `/set`)
-- [ ] refactor
+- [ ] the next-day button
+- [ ] refactor (and rename NLPError)
 - [ ] stable release
-
-note: add /cancel command
-and /delete
 
 ## Server owner's manual (self-hosting)
 The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.
@@ -58,12 +58,12 @@ All the commands don't take any arguments and ask follow-up questions if needed
 > [!NOTE] If an assignment for a certain subject is not changed, it's passed on to a future date
 
 ### Managing schedules
-- `/update-tomorrow-schedule`, that's really meant for the teachers. It asks for a new list of subjects, you have to type their names manually.
+- `/setschedule` It asks for a weekday and a list of subjects, you have to type their names manually
 
 ## A peek under the hood
 The app is designed to be as simple as possible, so it does not fully adhere to 12 factor app principles. They recommend storing persistent data in a database, but that would be quite overkill for my purposes. 12 factor apps are designed to scale, here you just host your own instance for each class.
 
-## Conversation examples
+## (wip) Conversation examples
 ```text
 user: /set sci
 bot:  what's the assignment?

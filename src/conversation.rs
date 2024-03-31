@@ -57,6 +57,18 @@ pub fn process_message(
                     state.push_arg(chat_id, task);
                 }
             }
+            Command::Delete => {
+                let subject = split.next();
+
+                if subject.is_none() {
+                    state.push_cmd(chat_id, command);
+                } else {
+                    let subject = subject.ok_or(NLPError::ParseError)?.to_string();
+
+                    state.push_cmd(chat_id, command);
+                    state.push_arg(chat_id, subject);
+                }
+            }
             Command::SetSchedule => {
                 let weekday = split.next();
                 let periods: String = split.collect();
@@ -132,6 +144,20 @@ pub fn process_message(
                         attachments: Vec::new(),
                     },
                 );
+
+                wrap_message("ok")
+            }
+        }
+        Command::Delete => {
+            let subject = args.next();
+
+            if subject.is_none() {
+                wrap_message("what's the subject?")
+            } else {
+                let subject = subject.ok_or(NLPError::ParseError)?.to_string();
+
+                chat.clear();
+                state.delete(subject);
 
                 wrap_message("ok")
             }
