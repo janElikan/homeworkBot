@@ -1,4 +1,5 @@
-> [!WARNING] This is a work-in-progress, I'm currently focused on fast iteration and shipping it ASAP
+> [!WARNING]
+> This is a work-in-progress, I'm currently focused on fast iteration and shipping it ASAP
 
 > A homework assignment keeping telegram bot
 
@@ -41,7 +42,8 @@ The server is made as simple as possible, it's only capable of managing data for
 
 \<binary installation instructions here />
 
-> [!WARNING] again, this is a work-in-progress, but here's how you can run it now
+> [!WARNING]
+> again, this is a work-in-progress, but here's how you can run it now
 
 ```shell
 > export BOT_TOKEN=(redacted)
@@ -69,7 +71,8 @@ All the commands don't take any arguments and ask follow-up questions if needed
 - `/set` gives you the list of subjects and an option to use the one that's currently in progress according to the bot's schedule, then asks for the assignment
 - `/delete` presents you with a list of subjects
 
-> [!NOTE] If an assignment for a certain subject is not changed, it's passed on to a future date
+> [!NOTE]
+> If an assignment for a certain subject is not changed, it's passed on to a future date
 
 ### Managing schedules
 - `/setschedule` It asks for a weekday and a list of subjects, you have to type their names manually
