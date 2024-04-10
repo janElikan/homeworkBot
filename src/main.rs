@@ -101,9 +101,8 @@ async fn process_message(
                 return Ok(());
             }
             "/version" | "/changelog" => {
-                send_message(&api, chat_id, "Version 1.0.0-alpha").await?;
-                send_message(&api, chat_id, "Rewritten from scratch").await?;
-                send_message(&api, chat_id, "Here be dragons").await?;
+                send_message(&api, chat_id, "Version 1.0.0-beta").await?;
+                send_message(&api, chat_id, "Improved error handling").await?;
                 return Ok(());
             }
             _ => (),
