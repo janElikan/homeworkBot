@@ -113,7 +113,7 @@ pub fn process_message(
             let now = Local::now();
 
             let due =
-                if now.time() > NaiveTime::from_hms_opt(12, 0, 0).ok_or(NLPError::ParseError)? {
+                if now.time() > NaiveTime::from_hms_opt(9, 30, 0).ok_or(NLPError::ParseError)? {
                     now + Days::new(1)
                 } else {
                     now

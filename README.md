@@ -25,15 +25,20 @@ Features:
 - [x] `/all` command
 - [x] `/delete` command
 - [x] alpha-release
+- [x] add error handling for when it can't find the network
 - [ ] switch command args from string to enum
+- [ ] admins
+- [ ] alpha 2 release
+- [ ] create a NixOS module
+- [ ] enable GitHub Actions
 - [ ] general refactor
 - [ ] split `process_message`
-- [ ] admins
 - [ ] timetables
 - [ ] subject name guessing (schedule support for `/set`)
 - [ ] the next-day button
 - [ ] make `/delete` error on nonexistent subject
 - [ ] refactor (and rename `NLPError`)
+- [ ] beta release
 - [ ] graceful shutdown
 - [ ] stable release
 

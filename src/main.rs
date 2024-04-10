@@ -6,7 +6,7 @@ use homeworkbot::{
     conversation::{self, NLPError},
     App,
 };
-use std::{env, fs};
+use std::{env, fs, time::Duration};
 use tracing::{debug, error, info};
 use tracing_subscriber::EnvFilter;
 
@@ -22,9 +22,24 @@ async fn main() -> Result<()> {
     };
 
     loop {
-        let response = api.get_updates(&cache).await?;
+        let response = match api.get_updates(&cache).await {
+            Ok(result) => result,
+            Err(reason) => {
+                error!("Failed to get updates from the API");
+                debug!(?reason);
+                tokio::time::sleep(Duration::new(8, 0)).await;
+                continue;
+            }
+        };
 
-        process_updates(&api, &mut state, &state_path, &response.result).await?;
+        let result = process_updates(&api, &mut state, &state_path, &response.result).await;
+
+        if let Err(reason) = result {
+            error!("Failed to process the message");
+            debug!(?reason);
+            tokio::time::sleep(Duration::new(8, 0)).await;
+            continue;
+        }
 
         if let Some(update) = response.result.last() {
             cache = GetUpdatesParams::builder()
