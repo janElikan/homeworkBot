@@ -38,8 +38,8 @@ Features:
 - [ ] the next-day button
 - [ ] make `/delete` error on nonexistent subject
 - [ ] refactor (and rename `NLPError`)
-- [ ] beta release
 - [ ] graceful shutdown
+- [ ] arm support
 - [ ] stable release
 
 ## Server owner's manual (self-hosting)
