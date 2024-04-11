@@ -33,7 +33,12 @@ pub fn process_message(
     if let Some(message) = message.strip_prefix('/') {
         let mut split = message.split(' ');
         let command = split.next().ok_or(NLPError::ParseError)?;
-        let command: Command = match command.parse() {
+        let command: Command = match command
+            .split('@')
+            .next()
+            .ok_or(NLPError::ParseError)?
+            .parse()
+        {
             Ok(cmd) => cmd,
             Err(_) => return Err(NLPError::InvalidCommand),
         };
