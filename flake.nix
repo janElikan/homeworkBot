@@ -36,7 +36,7 @@
         };
 
       devShell = with import nixpkgs { inherit system; }; mkShell {
-        buildInputs = [ cargo rustc rustfmt pre-commit rustPackages.clippy bacon rusty-man ];
+        buildInputs = [ cargo rustc rustfmt rust-analyzer pre-commit rustPackages.clippy bacon rusty-man ];
         RUST_SRC_PATH = rustPlatform.rustLibSrc;
       };
     });
