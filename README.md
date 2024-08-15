@@ -1,11 +1,9 @@
 > [!WARNING]
-> This is a work-in-progress, I'm currently focused on fast iteration and shipping it ASAP
+> This was a work-in-progress, I was focused on shipping it ASAP, which I did. The MVP serverd well and is now archived.
 
 > A homework assignment keeping telegram bot
 
-Our class in high school has a problem with assignments. Teachers would constantly forget to put them into the system they were supposed to use and tell us to remember the assignments instead. No-one did, so they kept asking me. I grew tired of that, so I made this:
-
-\<a video clip showing how it works />
+Our class in high school had a problem with assignments. Teachers would constantly forget to put them into the system they were supposed to use and tell us to remember the assignments instead. No-one did, so they kept asking me. I grew tired of that, so I made this.
 
 Features:
 - setting/getting assignments
@@ -44,8 +42,6 @@ Features:
 
 ## Server owner's manual (self-hosting)
 The server is made as simple as possible, it's only capable of managing data for a single class. If you need to scale it to multiple, deploy multiple instances.
-
-\<binary installation instructions here />
 
 > [!WARNING]
 > again, this is a work-in-progress, but here's how you can run it now
