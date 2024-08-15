@@ -1,5 +1,5 @@
 > [!WARNING]
-> This was a work-in-progress, I was focused on shipping it ASAP, which I did. The MVP serverd well and is now archived.
+> The project is unfinished. I was focused on shipping it ASAP, which I did. Then I finished school and no longer need it.
 
 > A homework assignment keeping telegram bot
 
